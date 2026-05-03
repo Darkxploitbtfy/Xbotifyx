@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Botify X — Connect WhatsApp</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--card:#161b22;--s2:#21262d;--border:#30363d;
+  --green:#2ea043;--gh:#3fb950;--gdim:#0d2016;--gglow:#2ea04355;
+  --text:#c9d1d9;--muted:#8b949e;--red:#f85149;--redbg:#160b0b;--amber:#d29922}
+body{min-height:100vh;background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:var(--text)}
+header{background:var(--card);border-bottom:1px solid var(--border);padding:.7rem 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.brand{font-weight:700;color:#fff;font-size:.95rem}
+.brand span{color:var(--muted);font-weight:400;font-size:.75rem;margin-left:.35rem}
+a.out{font-size:.78rem;color:var(--muted);text-decoration:none}.a.out:hover{color:var(--red)}
+.wrap{max-width:460px;margin:2rem auto;padding:0 1.25rem}
+.head{text-align:center;margin-bottom:1.5rem}
+.head h2{font-size:1.3rem;font-weight:700;color:#fff}
+.head p{font-size:.8rem;color:var(--muted);margin-top:.3rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.5rem}
+.fp{display:flex;align-items:center;gap:.5rem;background:var(--s2);border:1px solid var(--border);
+  border-radius:6px;padding:.45rem .8rem;font-size:.75rem;color:var(--muted);margin-bottom:1.1rem}
+.fp strong{color:var(--text);margin-left:.2rem}
+.steps{background:var(--s2);border-radius:7px;padding:.9rem 1rem;margin-bottom:1.2rem;
+  font-size:.8rem;color:var(--muted);line-height:1.85}
+.steps strong{color:var(--text)}
+kbd{background:var(--bg);border:1px solid var(--border);border-radius:3px;
+  padding:.1rem .4rem;font-family:monospace;font-size:.72rem;color:var(--muted)}
+label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:.3rem;font-weight:500}
+.row{display:flex;gap:.55rem;margin-bottom:.8rem}
+input[type=tel]{flex:1;padding:.58rem .8rem;background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);font-size:.88rem;outline:none;transition:border-color .15s}
+input:focus{border-color:var(--green)}
+.btn{padding:.6rem 1.1rem;background:var(--green);color:#fff;font-weight:700;font-size:.84rem;
+  border:none;border-radius:6px;cursor:pointer;white-space:nowrap;transition:background .15s}
+.btn:hover{background:var(--gh)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.codebox{background:var(--gdim);border:2px solid var(--green);border-radius:9px;
+  padding:1.3rem;text-align:center;margin-top:1rem;display:none}
+.codelabel{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.45rem}
+.codevalue{font-size:2.2rem;font-weight:800;color:var(--gh);letter-spacing:.28em;font-family:'Courier New',monospace}
+.codehint{font-size:.74rem;color:var(--muted);margin-top:.45rem}
+.statusbar{display:none;align-items:center;gap:.6rem;background:var(--s2);
+  border:1px solid var(--border);border-radius:7px;padding:.7rem 1rem;margin-top:.9rem}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--amber);box-shadow:0 0 5px var(--amber);flex-shrink:0}
+.dot.on{background:var(--green);box-shadow:0 0 8px var(--gglow)}
+.stxt{font-size:.8rem;color:var(--muted)}
+.errmsg{background:var(--redbg);border:1px solid var(--red);border-radius:6px;
+  color:var(--red);padding:.55rem .8rem;font-size:.8rem;margin-top:.7rem;display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">⚡ Botify X <span>v1.0.3</span></div>
+  <a class="out" href="/panel/logout">Logout</a>
+</header>
+<div class="wrap">
+  <div class="head">
+    <h2>Connect WhatsApp</h2>
+    <p>Link your WhatsApp account to activate the bot</p>
+  </div>
+  <div class="card">
+    <div class="fp">
+      🛡️ Client identity: <strong>Safari · macOS 10.15.7</strong>
+    </div>
+    <div class="steps">
+      <strong>How to pair:</strong><br/>
+      1. Open <strong>WhatsApp</strong> on your phone<br/>
+      2. Settings → <strong>Linked Devices → Link a Device</strong><br/>
+      3. Enter your number below → tap <strong>Generate Code</strong><br/>
+      4. On your phone tap <kbd>Link with phone number instead</kbd><br/>
+      5. Type the 8-digit code you see here
+    </div>
+    <label>Phone number with country code (no spaces/dashes)</label>
+    <div class="row">
+      <input type="tel" id="phone" placeholder="e.g. 2348012345678"/>
+      <button class="btn" id="genbtn" onclick="generate()">Generate</button>
+    </div>
+    <div class="codebox" id="codebox">
+      <div class="codelabel">Pairing Code — Enter in WhatsApp</div>
+      <div class="codevalue" id="codevalue">--------</div>
+      <div class="codehint">WhatsApp → Linked Devices → Link with phone number instead</div>
+    </div>
+    <div class="errmsg" id="errmsg"></div>
+    <div class="statusbar" id="statusbar">
+      <div class="dot" id="dot"></div>
+      <span class="stxt" id="stxt">Waiting for pairing...</span>
+    </div>
+  </div>
+</div>
+<script>
+let polling=false;
+async function generate(){
+  const phone=document.getElementById('phone').value.trim();
+  if(!phone){showErr('Please enter your phone number.');return;}
+  const btn=document.getElementById('genbtn');
+  btn.disabled=true; btn.textContent='Requesting...';
+  hideErr();
+  try{
+    const r=await fetch('/panel/api/generate-code',{
+      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone})
+    });
+    const d=await r.json();
+    if(d.connected){window.location.href='/panel/dashboard';return;}
+    if(d.error){showErr(d.error);btn.disabled=false;btn.textContent='Generate';return;}
+    document.getElementById('codevalue').textContent=d.code||'------';
+    document.getElementById('codebox').style.display='block';
+    document.getElementById('statusbar').style.display='flex';
+    btn.textContent='Regenerate'; btn.disabled=false;
+    if(!polling)startPoll();
+  }catch(e){showErr(e.message);btn.disabled=false;btn.textContent='Generate';}
+}
+function startPoll(){
+  polling=true;
+  const dot=document.getElementById('dot'),txt=document.getElementById('stxt');
+  (function p(){
+    fetch('/panel/api/status').then(r=>r.json()).then(d=>{
+      if(d.connected){dot.className='dot on';txt.textContent='✅ Connected! Redirecting...';
+        setTimeout(()=>window.location.href='/panel/dashboard',800);}
+      else setTimeout(p,3000);
+    }).catch(()=>setTimeout(p,5000));
+  })();
+}
+function showErr(m){const e=document.getElementById('errmsg');e.textContent='⚠️ '+m;e.style.display='block';}
+function hideErr(){document.getElementById('errmsg').style.display='none';}
+</script>
+</body>
+</html>
